@@ -1,5 +1,6 @@
 from webob import Request, Response
 from parse import parse
+import inspect
 
 
 class PeppyApp:
@@ -14,9 +15,23 @@ class PeppyApp:
 
     def handler_request(self, request):
         response = Response()
+        """
+        1. class 
+        """
 
         handler, kwargs = self.find_handler(request)
         if handler is not None:
+            if inspect.isclass(handler):
+                """
+                1. request.methot -> get/post/put/patch
+                2. find the right class method
+                3. return Method Not allowed exception
+                """
+                handler = getattr(handler(), request.method.lower(), None)
+                if handler is None:
+                    response.status_code = 405
+                    response.text = "Method Not Allowed."
+                    return response
             handler(request, response, **kwargs)
         else:
             self.default_response(response)
@@ -30,13 +45,14 @@ class PeppyApp:
             if parsed_result is not None:
                 return handler, parsed_result.named
         return None, None
-            
 
     def default_response(self, response):
         response.status_code = 404
         response.text = "Not Found."
 
     def route(self, path):
+        assert path not in self.routes, "Dublicate route. Please the achange url."
+
         def wrapper(handler):
             self.routes[path] = handler
             return handler
