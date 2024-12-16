@@ -1,5 +1,7 @@
 from webob import Request, Response
 from parse import parse
+import requests
+import wsgiadapter
 import inspect
 
 
@@ -15,18 +17,10 @@ class PeppyApp:
 
     def handler_request(self, request):
         response = Response()
-        """
-        1. class 
-        """
 
         handler, kwargs = self.find_handler(request)
         if handler is not None:
             if inspect.isclass(handler):
-                """
-                1. request.methot -> get/post/put/patch
-                2. find the right class method
-                3. return Method Not allowed exception
-                """
                 handler = getattr(handler(), request.method.lower(), None)
                 if handler is None:
                     response.status_code = 405
@@ -57,3 +51,8 @@ class PeppyApp:
             self.routes[path] = handler
             return handler
         return wrapper
+
+    def test_session(self):
+        session = requests.Session()
+        session.mount("http://testserver", wsgiadapter.WSGIAdapter(self))
+        return session

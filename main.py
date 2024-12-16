@@ -22,12 +22,6 @@ def greeting(request, response, name):
     response.text = f"Hello {name}"
 
 
-"""
-1. Duplicate routes -> Done
-2. Class based handler
-"""
-
-
 @app.route('/books')
 class Book:
 
