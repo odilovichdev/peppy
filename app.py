@@ -44,11 +44,15 @@ class PeppyApp:
         response.status_code = 404
         response.text = "Not Found."
 
+    def add_route(self, path, handler):
+        assert path not in self.routes, "Dublicate route. Please the change url."
+
+        self.routes[path] = handler
+
     def route(self, path):
-        assert path not in self.routes, "Dublicate route. Please the achange url."
 
         def wrapper(handler):
-            self.routes[path] = handler
+            self.add_route(path, handler)
             return handler
         return wrapper
 
