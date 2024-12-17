@@ -3,12 +3,19 @@ from parse import parse
 import requests
 import wsgiadapter
 import inspect
+from jinja2 import Environment, FileSystemLoader
+import os
 
 
 class PeppyApp:
 
-    def __init__(self):
+    def __init__(self, template_dirs="templates"):
         self.routes = dict()
+        self.template_env = Environment(
+            loader=FileSystemLoader(
+                os.path.abspath(template_dirs)
+            )
+        )
 
     def __call__(self, environ, start_response):
         request = Request(environ)
@@ -60,3 +67,8 @@ class PeppyApp:
         session = requests.Session()
         session.mount("http://testserver", wsgiadapter.WSGIAdapter(self))
         return session
+
+    def template(self, template_name, context=None):
+        if context is None:
+            context = {}
+        return self.template_env.get_template(template_name).render(**context).encode()

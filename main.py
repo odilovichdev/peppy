@@ -8,9 +8,8 @@ app = PeppyApp()
 def home(request, response):
     response.text = "Hello from the home page"
 
+
 # static routing
-
-
 @app.route("/about")
 def about(request, response):
     response.text = "Hello from the about page"
@@ -37,3 +36,14 @@ def new_handler(request, response):
 
 
 app.add_route("/new-handler", new_handler)
+
+
+@app.route("/template")
+def template_handler(req, resp):
+    resp.body = app.template(
+        "home.html",
+        context={
+            "new_title": "Best title",
+            "new_body": "Best body"
+        }
+    )

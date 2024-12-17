@@ -96,3 +96,22 @@ def test_alternative_add_routing(app, test_client):
 
     assert test_client.get(
         "http://testserver/new-handler").text == "From new handler"
+
+
+def test_template_handler(app, test_client):
+
+    @app.route('/template')
+    def template_handler(req, resp):
+        resp.body = app.template(
+            "test.html",
+            context={
+                "new_title": "Best title",
+                "new_body": "Best body"
+            }
+        )
+    resp = test_client.get("http://testserver/template")
+
+    assert "Best title" in resp.text 
+    assert "Best body" in resp.text 
+    assert "text/html" in resp.headers["Content-type"]
+
