@@ -4,7 +4,7 @@ import pytest
 
 def test_basic_route_adding(app):
 
-    @app.route('/hom')
+    @app.route('/home')
     def home(req, resp):
         resp.text = "Hello from the home page"
 
@@ -58,7 +58,7 @@ def test_class_based_get(app, test_client):
         def get(self, req, resp):
             resp.text = "Books page"
 
-    test_client.get("http://testserver/books").text == "Books page"
+    assert test_client.get("http://testserver/books").text == "Books page"
 
 
 def test_class_based_post(app, test_client):
@@ -111,7 +111,32 @@ def test_template_handler(app, test_client):
         )
     resp = test_client.get("http://testserver/template")
 
-    assert "Best title" in resp.text 
-    assert "Best body" in resp.text 
+    assert "Best title" in resp.text
+    assert "Best body" in resp.text
     assert "text/html" in resp.headers["Content-type"]
 
+
+def test_custom_exception_handler(app, test_client):
+
+    def on_exception(req, resp, exc):
+        resp.text = "Something bad exception"
+
+    app.add_exception(on_exception)
+
+    @app.route("/exception")
+    def exception_throwing_handler(req, resp):
+        raise AttributeError("Some exception")
+
+    resp = test_client.get("http://testserver/exception")
+
+    assert resp.text == "Something bad exception"
+
+
+def test_non_existent_static_file(test_client):
+    assert test_client.get(
+        "http://testserver/nonexistent.css").status_code == 404
+
+
+def test_static_file(test_client):
+    resp = test_client.get("http://testserver/test.css")
+    assert resp.text == "body {background-color: blue;}"
